@@ -1,3 +1,4 @@
+use bevy::input::ButtonState;
 use bevy::math::Vec3;
 use bevy::prelude::{Bundle, Camera3dBundle, Component};
 
@@ -14,20 +15,21 @@ pub struct PanOrbitCameraBundle {
 pub struct PanOrbitState {
     pub center: Vec3,
     pub radius: f32,
-    pub upside_down: bool,
     pub slope: f32,
     pub rotation: f32,
+    pub action: CameraAction,
+    pub mouse_state: ButtonState,
 }
 
 /// The configuration of the pan-orbit controller
 #[derive(Component)]
 pub struct PanOrbitSettings {
-    /// World units per pixel of mouse motion
-    pub pan_sensitivity: f32,
-    /// Radians per pixel of mouse motion
-    pub orbit_sensitivity: f32,
     /// Exponent per pixel of mouse motion
     pub zoom_sensitivity: f32,
+    /// Move sensitivity
+    pub move_sensitivity: f32,
+    /// Rotation sensitivity
+    pub rotate_sensitivity: f32,
     /// For devices with a notched scroll wheel, like desktop mice
     pub scroll_line_sensitivity: f32,
     /// For devices with smooth scrolling, like touchpads
@@ -35,20 +37,22 @@ pub struct PanOrbitSettings {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum PanOrbitAction {
-    Pan,
-    Orbit,
+pub enum CameraAction {
+    Rotate,
     Zoom,
+    Move,
+    None,
 }
 
 impl Default for PanOrbitState {
     fn default() -> Self {
         PanOrbitState {
-            center: Vec3::new(0., 10., 0.),
-            radius: 50.0,
-            upside_down: false,
+            center: Vec3::new(0.0, 2.0, 15.0), // width, height, depth
+            radius: 1.0,
             slope: 0.0,
             rotation: 0.0,
+            action: CameraAction::None,
+            mouse_state: ButtonState::Released,
         }
     }
 }
@@ -56,9 +60,9 @@ impl Default for PanOrbitState {
 impl Default for PanOrbitSettings {
     fn default() -> Self {
         PanOrbitSettings {
-            pan_sensitivity: 0.001, // 1000 pixels per world unit
-            orbit_sensitivity: 0.1f32.to_radians(), // 0.1 degree per pixel
-            zoom_sensitivity: 0.5,
+            zoom_sensitivity: 5.0,
+            move_sensitivity: 0.1,
+            rotate_sensitivity: 0.1,
             scroll_line_sensitivity: 16.0, // 1 "line" == 16 "pixels of motion"
             scroll_pixel_sensitivity: 1.0,
         }
